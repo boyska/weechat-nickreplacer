@@ -88,10 +88,10 @@ def cmd_cb(data, buffer, args):
 
 weechat.hook_modifier('irc_in_privmsg', 'change_nick', '')
 weechat.hook_command('nickreplacer', "Set replacement for nick",
-                        '[list] | [set old new] | [unset old]',
+                     '[list] | [set old new] | [unset old]',
                      'Use any subcommand',
                      'set old new'
                      'unset old',
                      'cmd_cb', '')
-weechat.hook_completion('nickreplacer', "Words in completion list.",
+weechat.hook_completion('replacednicks', "Words in completion list.",
                         'complete', '')
