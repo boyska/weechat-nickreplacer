@@ -7,6 +7,10 @@ def get_config_json(key):
     return json.loads(weechat.config_get_plugin(key))
 
 
+def set_config_json(key, val):
+    return weechat.config_set_plugin(key, json.dumps(val))
+
+
 def change_nick(data, modifier, modifier_data, string):
     # only interesting thing is string
     if weechat.buffer_get_string(weechat.current_buffer(),
@@ -61,6 +65,33 @@ for key in default_settings:
     if not weechat.config_is_set_plugin(key):
         weechat.config_set_plugin(key, default_settings[key])
 
+
+def cmd_cb(data, buffer, args):
+    args = args.split()
+    if not args:
+        return weechat.WEECHAT_RC_ERROR
+    changes = get_config_json('changes')
+    if args[0] == 'set':
+        changes[args[1]] = args[2]
+        set_config_json('changes', changes)
+        weechat.prnt('', 'replacement for %s set' % args[1])
+    elif args[0] == 'unset':
+        del changes[args[1]]
+    elif args[0] == 'list':
+        weechat.prnt('', '%d replacements set:' % len(changes))
+        for old, new in changes.items():
+            weechat.prnt('', "  %s    %s" % (old, new))
+    else:
+        weechat.prnt('', 'Invalid subcommand: %s' % args[0])
+        return weechat.WEECHAT_RC_ERROR
+    return weechat.WEECHAT_RC_OK
+
 weechat.hook_modifier('irc_in_privmsg', 'change_nick', '')
+weechat.hook_command('nickreplacer', "Set replacement for nick",
+                        '[list] | [set old new] | [unset old]',
+                     'Use any subcommand',
+                     'set old new'
+                     'unset old',
+                     'cmd_cb', '')
 weechat.hook_completion('nickreplacer', "Words in completion list.",
                         'complete', '')
